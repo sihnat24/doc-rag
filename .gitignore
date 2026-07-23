@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environment / secrets
+.env
+.env.*
+*.key
+secrets.json
+
+# Vector store (persisted Chroma db — large, reproducible from ingest)
+chroma_db/
+*.db
+*.sqlite3
+
+# Embeddings / model cache
+.cache/
+models/
+*.bin
+*.pt
+*.safetensors
+
+# Noise-layer PDFs from Kaggle (large, not authored, reproducible from source)
+data/noise/
+data/raw/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
