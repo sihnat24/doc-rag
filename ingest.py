@@ -7,7 +7,6 @@
 #all helpers just return a block of text
 
 
-import os 
 
 import pandas as pd
 import pdfplumber
@@ -16,15 +15,11 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
 import chromadb
-
-DATA_DIR = 'data'
-DATA_TYPES = ['.docx','.html','.pdf','.csv']
-ENCODER = "all-MiniLM-L6-v2"
-CHUNK_SIZE = 500
-CHUNK_OVERLAP = 50
+import config
 
 
-COLLECTION = "curated_files"
+
+
 
 
 def parse_pdf(path: str) -> str:
@@ -114,13 +109,13 @@ def extract_chunks(text: str, size: int, overlap: int) -> list[str]:
 
 def main():
 
-    encoder = SentenceTransformer(ENCODER)
+    encoder = SentenceTransformer(config.ENCODER)
     
-    paths = get_files(DATA_DIR, DATA_TYPES)
+    paths = get_files(config.DATA_DIR, config.DATA_TYPES)
 
     #setup chromadb
     client = chromadb.PersistentClient(path="chroma_db")
-    collection = client.get_or_create_collection(COLLECTION)
+    collection = client.get_or_create_collection(config.COLLECTION)
 
     chunks = []
     sources = []
@@ -130,7 +125,7 @@ def main():
     print(len(paths))
     for p in paths:
         text = extract_text(p)
-        file_chunks = extract_chunks(text, CHUNK_SIZE, CHUNK_OVERLAP)
+        file_chunks = extract_chunks(text, config.CHUNK_SIZE, config.CHUNK_OVERLAP)
         for idx, chunk in enumerate(file_chunks):
             source_ids.append(f"{p.name}_{idx}")
             chunks.append(chunk)
