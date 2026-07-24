@@ -1,0 +1,7 @@
+pdfplumber
+python-docx
+beautifulsoup4
+pandas
+sentence-transformers
+chromadb
+ollama
