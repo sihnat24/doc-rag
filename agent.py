@@ -12,7 +12,7 @@ def run_agent(
             encoder: SentenceTransformer
             ) -> str:                                            
 
-    messages = [                                  
+    messages = [ #models working memory chain. we append to this as we go                                  
         {"role": "system", "content": config.TOOL_PROMPT},                             
         {"role": "user", "content": question}      
     ]                                              
@@ -26,7 +26,7 @@ def run_agent(
 
     # if no tool call, model answered directly (e.g. a trap question)
     if not response.message.tool_calls:
-      return "I don't have information on that in the available documents."     
+      return "I don't have information on that in the available documents.", [] 
                                                 
     # tool was called — extract the query argument 
     tool_call = response.message.tool_calls[0]
@@ -39,8 +39,7 @@ def run_agent(
     chunks, sources = tools.retrieve(q_emb, config.TOP_K, collection)                              
 
     # format chunks with sources for context       
-    context = "\n---\n".join(f"[{src}]\n{chunk}" 
-    for src, chunk in zip(sources, chunks))            
+    context = "\n---\n".join(f"[{src}]\n{chunk}" for src, chunk in zip(sources, chunks))            
                                                 
     # second call — model generates answer using retrieved context                                
     messages.append({"role": "assistant",      
@@ -55,4 +54,4 @@ def run_agent(
         messages=messages
         )                                                      
        
-    return final.message.content  
+    return final.message.content, sources
