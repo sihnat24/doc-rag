@@ -26,7 +26,7 @@ def run_agent(
 
     # if no tool call, model answered directly (e.g. a trap question)
     if not response.message.tool_calls:
-      return "I don't have information on that in the available documents.", [] 
+      return "I don't have information on that in the available documents.", [] #empty list for no sources 
                                                 
     # tool was called — extract the query argument 
     tool_call = response.message.tool_calls[0]

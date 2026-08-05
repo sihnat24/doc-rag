@@ -39,12 +39,12 @@ def main():
         t = threading.Thread(target=spinner, args=(stop,))
         t.start()
 
-        response, sources = agent.run_agent(usr_input, collection, encoder)
+        answer, sources = agent.run_agent(usr_input, collection, encoder)
 
         stop.set()
         t.join()
 
-        print(f"{response}\n\n")
+        print(f"{answer}\n\n")
 
 if __name__ == "__main__":
     main()
