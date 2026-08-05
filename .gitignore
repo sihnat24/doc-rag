@@ -28,7 +28,8 @@ models/
 *.pt
 *.safetensors
 
-# Noise-layer PDFs from Kaggle (large, not authored, reproducible from source)
+# PDFs and data files (large, not source code)
+data/**/*.pdf
 data/noise/
 data/raw/
 

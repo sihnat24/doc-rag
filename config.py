@@ -10,6 +10,11 @@ MODEL = "llama3.1"
 TOP_K = 3
 COLLECTION = "curated_files"
 
+#caffeine corpus
+CAFFEINE_COLLECTION = "caffeine_papers"
+CAFFEINE_DATA_DIR = "data/caffeine"
+CAFFEINE_METADATA_CSV = "data/caffeine/metadata.csv"
+
 #encoder
 ENCODER = "all-MiniLM-L6-v2"
 
@@ -19,6 +24,9 @@ DATA_TYPES = ['.docx','.html','.pdf','.csv']
 
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 50
+
+#PDF relateed
+PIXEL_THRESH = 15
 
 #tools
 

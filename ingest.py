@@ -17,7 +17,34 @@ from sentence_transformers import SentenceTransformer
 import chromadb
 import config
 
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+
+def detect_columns(page, pixel_thresh: int) -> int:
+    words = page.extract_words()
+    #build a set of x1 values, look for a gap 
+    
+    #each word spans x0 to x1, we create a rang of its from x0 to x1 for all words. then look if any xs are missing
+    #words is a list of dicts
+    #[ {'x0': 72, 'x1': 134, 'top': 100, 'bottom': 112, 'text': 'peripheral'}, ] 
+
+    word_ranges = set()
+    for word in words:
+        for x in range(int(word['x0']), int(word['x1']) + 1):
+            word_ranges.add(x)
+
+    width = page.width
+
+    mid_col = set()
+    for i in range(int(0.3 * width), int(0.7 * width)):
+        if i not in word_ranges:
+            mid_col.add(i)
+
+    if len(mid_col) > pixel_thresh:
+        return 2
+    return 1
+
+      
 
 
 
@@ -25,12 +52,31 @@ import config
 def parse_pdf(path: str) -> str:
     full_text = []
     with pdfplumber.open(path) as pdf:
-        for page in pdf.pages:
-            text= page.extract_text()
-            if text:
-                full_text.append(text)
+            for page in pdf.pages:
+
+                #first, extract any tables in the page
+                tables = page.extract_tables()
+                for table in tables:
+                    for row in table:
+                        row_text = " | ".join(cell or "" for cell in row)
+                        full_text.append(row_text)
+
+                #for text, first determine column format (not all papers are one nice block of text that can be read left to right row by row)
+                cols = detect_columns(page, config.PIXEL_THRESH)
+                if cols == 1:
+                    text= page.extract_text()
+                    if text:
+                        full_text.append(text)
+                else: #2 col academic paper
+                    w, h = page.width, page.height
+                    left = page.crop((0, 0, w / 2, h)).extract_text() or ""
+                    right = page.crop((w / 2, 0, w, h)).extract_text() or ""
+                    text = left + "\n" + right
+                    if text.strip():
+                        full_text.append(text)
+
     return "\n\n".join(full_text) #very clear a new page starts
-            
+ 
 def parse_docx(path: str) -> str:
     full_text = []
     doc = Document(path)
@@ -94,28 +140,26 @@ def get_files(data_dir: str, file_types: list) -> list[Path]:
     return paths
 
 
-def extract_chunks(text: str, size: int, overlap: int) -> list[str]:
-    l = len(text)
-    p = 0
-    chunks = []
-    while p + size - overlap < l:
-        chunks.append(text[p: p + size])
-        p += size - overlap
+def extract_chunks(text: str) -> list[str]:
 
-    if p < l:
-        chunks.append(text[p:])
+    splitter = RecursiveCharacterTextSplitter(
+      chunk_size=config.CHUNK_SIZE,
+      chunk_overlap=config.CHUNK_OVERLAP
+    )
+    chunks = splitter.split_text(text)
+    
     return chunks
 
 
-def main():
+def main(data_dir: str, collection_name: str):
 
     encoder = SentenceTransformer(config.ENCODER)
-    
-    paths = get_files(config.DATA_DIR, config.DATA_TYPES)
+
+    paths = get_files(data_dir, config.DATA_TYPES)
 
     #setup chromadb
     client = chromadb.PersistentClient(path="chroma_db")
-    collection = client.get_or_create_collection(config.COLLECTION)
+    collection = client.get_or_create_collection(collection_name)
 
     chunks = []
     sources = []
@@ -125,7 +169,7 @@ def main():
     print(len(paths))
     for p in paths:
         text = extract_text(p)
-        file_chunks = extract_chunks(text, config.CHUNK_SIZE, config.CHUNK_OVERLAP)
+        file_chunks = extract_chunks(text)
         for idx, chunk in enumerate(file_chunks):
             source_ids.append(f"{p.name}_{idx}")
             chunks.append(chunk)
@@ -136,7 +180,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(config.DATA_DIR, config.COLLECTION)
     
 
 
