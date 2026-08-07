@@ -44,10 +44,6 @@ def detect_columns(page, pixel_thresh: int) -> int:
         return 2
     return 1
 
-      
-
-
-
 
 def parse_pdf(path: str) -> str:
     full_text = []

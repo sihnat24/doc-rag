@@ -5,3 +5,6 @@ pandas
 sentence-transformers
 chromadb
 ollama
+langchain
+langchain-ollama
+langchain-text-splitters

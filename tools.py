@@ -1,19 +1,28 @@
-
-import chromadb
+from langchain.tools import tool
 from sentence_transformers import SentenceTransformer
-import ollama
+import chromadb
 import config
+import ollama
 
+encoder = SentenceTransformer(config.ENCODER)
+client = chromadb.PersistentClient(path="chroma_db")
+collection = client.get_collection(config.COLLECTION)
 
-def retrieve(q_emb, k: int, collection: chromadb.Collection) -> tuple:
+@tool
+def search_knowledge_base(query: str) -> str:
+    """Search the local knowledge base for information relevant to the query."""
 
-    results = collection.query(query_embeddings= q_emb, n_results=k)
+    q_emb = encoder.encode(query).tolist()
+    results = collection.query(query_embeddings=[q_emb], n_results=config.TOP_K)
 
     chunks = results["documents"][0]
     sources = [m['source'] for m in results["metadatas"][0]]
 
-    return (chunks, sources)
+    output = []
+    for count, (chunk, source) in enumerate(zip(chunks, sources), start=1):
+        output.append(f"source {count}: {source}, {chunk}.")
 
+    return " ".join(output)
 
 def get_answer(question, chunks, sources):
 

@@ -5,6 +5,9 @@ TOOL_PROMPT = "You are a program analyst assistant. You have access to a local k
 ANSWER_PROMPT = "You are a program analyst assistant. Answer the question using only the retrieved document excerpts provided. Always cite the source document. If the excerpts do not contain the answer, explicitly say 'I don't have information on that in the available documents.' Do not use outside knowledge."
 MODEL = "llama3.1"
 
+from langchain_ollama import ChatOllama
+LLM = ChatOllama(model=MODEL)
+
 
 #retrieval
 TOP_K = 3
