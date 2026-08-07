@@ -1,0 +1,92 @@
+{
+  "metadata.csv": {
+    "hash": "48e461ef0d1da9f78936c747a2d6b665",
+    "ingested_at": "2026-08-07T13:32:03.172198",
+    "type": "table"
+  },
+  "risk_budget_tracker.csv": {
+    "hash": "990c1017c747e20720dab09eed9e7928",
+    "ingested_at": "2026-08-07T13:32:03.176725",
+    "type": "table"
+  },
+  "paper_04_berglund_1982.pdf": {
+    "hash": "3515c3f09dfd31c7d79e1b41e9d2a96d",
+    "ingested_at": "2026-08-07T13:32:09.557589",
+    "type": "prose"
+  },
+  "paper_07_wylie_2013.pdf": {
+    "hash": "bf29ecd16c3c71b02ceadf640addb010",
+    "ingested_at": "2026-08-07T13:32:10.381410",
+    "type": "prose"
+  },
+  "paper_08_desbrow_2012.pdf": {
+    "hash": "cd6e3adbac9d2f7bc6fb2092432990fb",
+    "ingested_at": "2026-08-07T13:32:10.853431",
+    "type": "prose"
+  },
+  "paper_01_chen_2019.pdf": {
+    "hash": "9bae8b66112af9619dab74d2241c317d",
+    "ingested_at": "2026-08-07T13:32:11.537663",
+    "type": "prose"
+  },
+  "paper_09_knols_2005.pdf": {
+    "hash": "28cef261ba77e4613ea77353a8c11fe5",
+    "ingested_at": "2026-08-07T13:32:12.498384",
+    "type": "prose"
+  },
+  "paper_02_filip_stachnik_2020.pdf": {
+    "hash": "0f6ae801c7687ac37552d0820c905302",
+    "ingested_at": "2026-08-07T13:32:12.925719",
+    "type": "prose"
+  },
+  "paper_05_bond_1986.pdf": {
+    "hash": "83072293fc9ad261c1d78a39ba91c10f",
+    "ingested_at": "2026-08-07T13:32:13.312696",
+    "type": "prose"
+  },
+  "paper_06_graham_1991.pdf": {
+    "hash": "d546b3416ae43d7f4382b9f75f2305e5",
+    "ingested_at": "2026-08-07T13:32:14.135314",
+    "type": "prose"
+  },
+  "paper_03_giraldez_2020.pdf": {
+    "hash": "3ee34644523ec36cbd5e1a3c21b96d2d",
+    "ingested_at": "2026-08-07T13:32:14.658025",
+    "type": "prose"
+  },
+  "paper_10_stern_2019.pdf": {
+    "hash": "1c771ef31edeb4d787f8abe43c86edce",
+    "ingested_at": "2026-08-07T13:32:15.299715",
+    "type": "prose"
+  },
+  "attention.pdf": {
+    "hash": "18e1b007a1dab45b30cc861ba2dfda25",
+    "ingested_at": "2026-08-07T13:32:16.542752",
+    "type": "prose"
+  },
+  "contractor_performance_policy.html": {
+    "hash": "4f2d40dec59c3c3dd79f0f5537fbb6dd",
+    "ingested_at": "2026-08-07T13:32:16.552019",
+    "type": "prose"
+  },
+  "image generators are generalist vision leaners.pdf": {
+    "hash": "1d6bab4556b4d6c774e2d7ce55e19d41",
+    "ingested_at": "2026-08-07T13:32:17.510409",
+    "type": "prose"
+  },
+  "risk_management_policy.html": {
+    "hash": "ba179a20d7c77c811b577dae570d64bb",
+    "ingested_at": "2026-08-07T13:32:17.512454",
+    "type": "prose"
+  },
+  "status_brief.docx": {
+    "hash": "ba1d8fafd05c505f23178eada89ef682",
+    "ingested_at": "2026-08-07T13:32:17.518450",
+    "type": "prose"
+  },
+  "koala.pdf": {
+    "hash": "1edb23163329c5c0d02e750a899530d9",
+    "ingested_at": "2026-08-07T13:32:19.294440",
+    "type": "prose"
+  }
+}

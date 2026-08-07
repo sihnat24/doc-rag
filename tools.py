@@ -1,4 +1,7 @@
+import sqlite3
+
 from langchain.tools import tool
+from langchain_community.tools import DuckDuckGoSearchRun
 from sentence_transformers import SentenceTransformer
 import chromadb
 import config
@@ -23,6 +26,54 @@ def search_knowledge_base(query: str) -> str:
         output.append(f"source {count}: {source}, {chunk}.")
 
     return " ".join(output)
+
+@tool
+def list_knowledge_base() -> str:
+    """List all documents currently indexed in the local knowledge base."""
+    results = collection.get(include=["metadatas"])
+    sources = {m["source"] for m in results["metadatas"] if "source" in m}
+    if not sources:
+        return "No documents found in the knowledge base."
+    return "Documents in knowledge base:\n" + "\n".join(f"- {s}" for s in sorted(sources))
+
+
+web_search = DuckDuckGoSearchRun()
+
+
+@tool
+def query_spreadsheet(sql: str) -> str:
+    """Run a read-only SQL SELECT query against the program risk/budget database.
+
+    Table: risk_budget_tracker
+    Columns: subsystem, vendor_under_eval, quarter, risk_status,
+             risk_description, allocated_budget_usd, expenditure_usd,
+             program_manager_note
+
+    Only SELECT statements are permitted. Use this for precise lookups,
+    filtering, or aggregations (e.g. total spend by vendor, all Red-risk rows).
+    """
+    sql = sql.strip()
+    if not sql.upper().startswith("SELECT"):
+        return "Error: only SELECT queries are permitted."
+
+    try:
+        con = sqlite3.connect(f"file:{config.DB_PATH}?mode=ro", uri=True)
+        cur = con.cursor()
+        cur.execute(sql)
+        rows = cur.fetchall()
+        col_names = [d[0] for d in cur.description]
+        con.close()
+    except sqlite3.OperationalError as e:
+        return f"SQL error: {e}"
+
+    if not rows:
+        return "Query returned no results."
+
+    header = " | ".join(col_names)
+    divider = "-" * len(header)
+    lines = [header, divider] + [" | ".join(str(v) for v in row) for row in rows]
+    return "\n".join(lines)
+
 
 def get_answer(question, chunks, sources):
 

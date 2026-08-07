@@ -1,11 +1,14 @@
-from langchain_ollama import ChatOllama
-from langchain.agents import create_tool_calling_agent, AgentExecutor
-from langchain_core.prompts import ChatPromptTemplate
+from langchain.agents import create_agent
 import config
+import tools
+
+agent_graph = create_agent(
+    config.LLM,
+    [tools.search_knowledge_base, tools.list_knowledge_base, tools.query_spreadsheet, tools.web_search],
+    system_prompt=config.TOOL_PROMPT,
+)
 
 
-prompt = ChatPromptTemplate.from_messages([
-    ("system", config.TOOL_PROMPT),
-    ("human", "{input}"),
-    ("placeholder", "{agent_scratchpad}")
-])
+def run_agent(question: str) -> str:
+    result = agent_graph.invoke({"messages": [{"role": "user", "content": question}]})
+    return result["messages"][-1].content

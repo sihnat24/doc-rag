@@ -8,17 +8,55 @@
 
 
 
+import hashlib
+import json
+import sqlite3
+import sys
+from datetime import datetime
+from pathlib import Path
+
+import chromadb
 import pandas as pd
 import pdfplumber
-from docx import Document
 from bs4 import BeautifulSoup
-from pathlib import Path
+from docx import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
-import chromadb
+
 import config
 
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+# --- Ingestion log helpers ---
+
+def load_log() -> dict:
+    log_path = Path(config.INGEST_LOG)
+    if log_path.exists():
+        with open(log_path) as f:
+            return json.load(f)
+    return {}
+
+def save_log(log: dict):
+    with open(config.INGEST_LOG, "w") as f:
+        json.dump(log, f, indent=2)
+
+def file_hash(path: Path) -> str:
+    return hashlib.md5(path.read_bytes()).hexdigest()
+
+def already_ingested(path: Path, log: dict) -> bool:
+    entry = log.get(path.name)
+    if not entry:
+        return False
+    return entry["hash"] == file_hash(path)
+
+def log_file(path: Path, log: dict, file_type: str):
+    log[path.name] = {
+        "hash": file_hash(path),
+        "ingested_at": datetime.now().isoformat(),
+        "type": file_type,
+    }
+
+
+# --- Parsers ---
 
 def detect_columns(page, pixel_thresh: int) -> int:
     words = page.extract_words()
@@ -105,6 +143,10 @@ def parse_csv(path) -> str:
     return "\n\n".join(full_text)
 
 
+def parse_xlsx(path) -> pd.DataFrame:
+    return pd.read_excel(path)
+
+
 def extract_text(file: Path) -> str:
 
     if file.suffix == ".csv":
@@ -147,23 +189,41 @@ def extract_chunks(text: str) -> list[str]:
     return chunks
 
 
-def main(data_dir: str, collection_name: str):
+def ingest_tables(paths: list[Path], log: dict, force: bool):
+    """Load CSV/XLSX files into SQLite. Each file becomes its own table."""
+    con = sqlite3.connect(config.DB_PATH)
 
-    encoder = SentenceTransformer(config.ENCODER)
-
-    paths = get_files(data_dir, config.DATA_TYPES)
-
-    #setup chromadb
-    client = chromadb.PersistentClient(path="chroma_db")
-    collection = client.get_or_create_collection(collection_name)
-
-    chunks = []
-    sources = []
-    source_ids = []
-
-
-    print(len(paths))
     for p in paths:
+        if not force and already_ingested(p, log):
+            print(f"  [skip] {p.name} (unchanged)")
+            continue
+
+        if p.suffix == ".csv":
+            df = pd.read_csv(p)
+        else:
+            df = parse_xlsx(p)
+
+        df.columns = [c.strip().lower().replace(" ", "_") for c in df.columns]
+        df = df.map(lambda x: x.strip() if isinstance(x, str) else x)
+
+        table_name = p.stem.lower().replace(" ", "_").replace("-", "_")
+        df.to_sql(table_name, con, if_exists="replace", index=False)
+
+        log_file(p, log, "table")
+        print(f"  [table] {p.name} → SQLite table '{table_name}' ({len(df)} rows)")
+
+    con.close()
+
+
+def ingest_prose(paths: list[Path], collection, encoder, log: dict, force: bool):
+    """Chunk and embed prose files into Chroma."""
+    chunks, sources, source_ids = [], [], []
+
+    for p in paths:
+        if not force and already_ingested(p, log):
+            print(f"  [skip] {p.name} (unchanged)")
+            continue
+
         text = extract_text(p)
         file_chunks = extract_chunks(text)
         for idx, chunk in enumerate(file_chunks):
@@ -171,12 +231,48 @@ def main(data_dir: str, collection_name: str):
             chunks.append(chunk)
             sources.append(p.name)
 
-    embeddings = encoder.encode(chunks).tolist()
-    collection.add(ids=source_ids, documents=chunks, embeddings=embeddings, metadatas=[{"source": s} for s in sources])
+        log_file(p, log, "prose")
+        print(f"  [prose] {p.name} → {len(file_chunks)} chunks")
+
+    if chunks:
+        embeddings = encoder.encode(chunks).tolist()
+        collection.add(
+            ids=source_ids,
+            documents=chunks,
+            embeddings=embeddings,
+            metadatas=[{"source": s} for s in sources],
+        )
+
+
+def main(data_dir: str, collection_name: str, force: bool = False):
+    log = load_log()
+
+    prose_paths = get_files(data_dir, config.DATA_TYPES)
+    table_paths = get_files(data_dir, config.TABLE_TYPES)
+
+    print(f"\nFound {len(prose_paths)} prose file(s), {len(table_paths)} table file(s)")
+
+    print("\n-- Tables (SQLite) --")
+    ingest_tables(table_paths, log, force)
+
+    print("\n-- Prose (Chroma) --")
+    encoder = SentenceTransformer(config.ENCODER)
+    client = chromadb.PersistentClient(path="chroma_db")
+    collection = client.get_or_create_collection(collection_name)
+    ingest_prose(prose_paths, collection, encoder, log, force)
+
+    save_log(log)
+    print("\nDone. Log saved.")
 
 
 if __name__ == "__main__":
-    main(config.DATA_DIR, config.COLLECTION)
+    force = "--force" in sys.argv
+    if force:
+        confirm = input("Re-ingest all files? This will overwrite existing data. [y/N]: ").strip().lower()
+        if confirm != "y":
+            print("Aborted.")
+            sys.exit(0)
+    main(config.DATA_DIR, config.COLLECTION, force=force)
     
 
 
