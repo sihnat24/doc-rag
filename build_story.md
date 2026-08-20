@@ -97,6 +97,54 @@ Intended as interview prep — not documentation.
 
 ---
 
+## 2026-08-19 — Embedding Model Upgrade: MiniLM → MPNet
+
+**Problem:** Even after fixing noise and bumping chunk size to 900, mid-sentence splits persisted. `RecursiveCharacterTextSplitter` tries paragraph → sentence → word boundaries before falling back to character splits, so the splitter itself wasn't the issue — the chunk size ceiling was.
+
+**Root cause:** `all-MiniLM-L6-v2` has a 256-token max sequence length (~1000–1200 chars). Chunks larger than that are silently truncated during embedding — the tail of the chunk is invisible to retrieval entirely. So there was no point pushing chunk size past ~1100.
+
+**Fix:** Switched encoder to `all-mpnet-base-v2` (384-token max, ~1400–1500 chars). Same local/free setup via sentence-transformers, meaningfully better embedding quality, and enough headroom to let the splitter find real sentence boundaries.
+
+- `ENCODER`: `all-MiniLM-L6-v2` → `all-mpnet-base-v2`
+- `CHUNK_SIZE`: 900 → 1400
+- `CHUNK_OVERLAP`: 100 → 150
+
+**Tradeoff:** MPNet is slower to encode (~3–4x vs MiniLM) and the vectors are 768-dim vs 384-dim, so Chroma uses more memory. Neither matters at this corpus size. Would matter at millions of chunks.
+
+**Unresolved — chunk overlap is still mid-sentence:** Even with larger chunks and clean cut points, the overlap backtrack is dumb — it goes back exactly `CHUNK_OVERLAP` chars regardless of where that lands. So the start of every non-first chunk is likely mid-sentence. The overlap didn't cause the original bad cut, but it reintroduces a mid-sentence fragment at every boundary. The real fix is a sentence-aware splitter (e.g., pack whole sentences up to the size limit, overlap by whole sentences). Not implemented — retrieval still works because the core content is intact. Logged as a known imprecision.
+
+**Table chunks bypass the splitter — embedding truncation risk:** Tables are inserted as pre-formed chunks and never pass through `RecursiveCharacterTextSplitter`. Two tables in Singer 2024 exceeded 2x `CHUNK_SIZE` (~2800 chars), which is well past the encoder's ~1500-char practical limit. Those tables are silently truncated during embedding — rows near the bottom are invisible to retrieval. No fix implemented yet; added a test that flags tables over 2x `CHUNK_SIZE` as a warning.
+
+**Takeaway:** Chunk size and embedding model max length are coupled. Tuning one without knowing the other's ceiling is wasted effort. Always check the model's `max_seq_length` before pushing chunk size.
+
+---
+
+## 2026-08-19 — Marker Chunk Quality: Post-Ingest Debug Session
+
+**Problems found (manual inspection of `tests/singer_chunks.txt`):**
+
+1. **Mid-sentence splits**: `CHUNK_SIZE=500` is too small for academic prose. Sentences commonly run 200–300 chars; with `CHUNK_OVERLAP=50`, splits landed mid-sentence and the overlap caused the partial sentence to repeat at the start of the next chunk.
+
+2. **Front matter noise**: Marker preserves the full paper including author affiliations, correspondence blocks, funding acknowledgments — all of which appear before the Abstract. These became their own chunks with zero retrieval value.
+
+3. **References section noise**: The full bibliography (chunks 186–248 in Singer 2024) was ingested as prose chunks. Citation fragments like "doi.org/10.1093/..." are semantically meaningless and pollute the embedding space.
+
+4. **Residual HTML tags**: `<span id="page-X-0">` tags from Marker's markdown output were only stripped in the TABLE detection path — they bled through into prose lines.
+
+5. **Markdown link syntax**: `[text](url)` rendered as-is in prose chunks, adding URL noise to every citation-heavy sentence.
+
+**How each was handled:**
+
+- **Chunk size**: bumped `CHUNK_SIZE` 500→900, `CHUNK_OVERLAP` 50→100. Fewer mid-sentence breaks; overlap large enough to preserve cross-boundary context.
+- **Front matter**: `parse_pdf_marker` now skips all lines until it detects the `## Abstract` heading. Works because Marker consistently outputs an Abstract heading for academic papers.
+- **References/Acknowledgments/Author Contributions**: added a `STOP_HEADINGS` regex — once matched, all subsequent lines are discarded. Drops ~30+ junk chunks per paper.
+- **HTML tags**: moved the `re.sub(r"<[^>]+>", "", line)` strip to the top of the loop so it applies to all lines, not just TABLE detection.
+- **Markdown links**: added `re.sub(r"\[([^\]]+)\]\([^\)]+\)", r"\1", clean_line)` before appending to prose — keeps anchor text, drops URL.
+
+**Takeaway**: Marker's output quality is high but it preserves the full document structure. Noise filtering has to be explicit — the parser doesn't know what's front matter vs. body vs. bibliography. Section heading detection is the right hook.
+
+---
+
 ## What We'd Explore Next (Not Built)
 
 - **Proper BM25 tokenization**: NLTK/spaCy with punctuation stripping instead of whitespace split

@@ -33,7 +33,7 @@ CAFFEINE_DATA_DIR = "data/caffeine"
 CAFFEINE_METADATA_CSV = "data/caffeine/metadata.csv"
 
 #encoder
-ENCODER = "all-MiniLM-L6-v2"
+ENCODER = "all-mpnet-base-v2"
 
 #data extraction
 DATA_DIR = 'data'
@@ -44,8 +44,8 @@ TABLE_TYPES = ['.csv', '.xlsx']            # tabular → SQLite
 DB_PATH = "program.db"
 INGEST_LOG = "ingest_log.json"
 
-CHUNK_SIZE = 500
-CHUNK_OVERLAP = 50
+CHUNK_SIZE = 1400
+CHUNK_OVERLAP = 150
 
 #PDF relateed
 PIXEL_THRESH = 15

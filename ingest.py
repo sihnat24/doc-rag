@@ -116,6 +116,11 @@ def parse_pdf_marker(path: Path, converter: PdfConverter) -> tuple[str, list[str
 
     Tables and figures are returned as pre-formed chunks (bypass splitter).
     Prose is returned as a single string to be chunked normally.
+
+    Noise filtering:
+    - Front matter (affiliations, funding, correspondence) before Abstract is skipped.
+    - References/Acknowledgments/Author Contributions sections at the end are dropped.
+    - Inline HTML tags and markdown link syntax are stripped from prose.
     """
     rendered = converter(str(path))
     text, _, _ = text_from_rendered(rendered)
@@ -124,14 +129,45 @@ def parse_pdf_marker(path: Path, converter: PdfConverter) -> tuple[str, list[str
     figure_chunks = []
     prose_lines = []
 
+    # Sections to drop from end of paper
+    STOP_HEADINGS = re.compile(
+        r"^#{1,6}\s*(References|REFERENCES|Acknowledgments|ACKNOWLEDGMENTS"
+        r"|Author Contributions|AUTHOR CONTRIBUTIONS)\s*$"
+    )
+    ABSTRACT_HEADING = re.compile(r"^#{1,6}\s*(Abstract|ABSTRACT)\s*$")
+
     lines = text.split("\n")
-    i = 0
+
+    # Pre-scan: find where Abstract starts; if not found, start from line 0
+    start_line = 0
+    for idx, line in enumerate(lines):
+        if ABSTRACT_HEADING.match(re.sub(r"<[^>]+>", "", line).strip()):
+            start_line = idx + 1  # skip the heading itself, start with content
+            break
+
+    in_stop_section = False
+
+    i = start_line
     while i < len(lines):
         line = lines[i]
 
-        # TABLE: caption line followed by markdown table rows
-        # Strip inline HTML spans that Marker sometimes prepends (e.g. <span id="page-X-0"></span>)
+        # Strip HTML tags from every line before any other processing
         clean_line = re.sub(r"<[^>]+>", "", line).strip()
+
+        # Detect stop sections — drop everything from here to end of file
+        if STOP_HEADINGS.match(clean_line):
+            in_stop_section = True
+
+        if in_stop_section:
+            i += 1
+            continue
+
+        # Image refs — discard, no useful text content
+        if re.match(r"^!\[", clean_line):
+            i += 1
+            continue
+
+        # TABLE: caption line followed by markdown pipe rows
         if re.match(r"^TABLE\s+\d+", clean_line):
             chunk_lines = [clean_line]
             i += 1
@@ -140,7 +176,6 @@ def parse_pdf_marker(path: Path, converter: PdfConverter) -> tuple[str, list[str
                 if l.startswith("|") or l.strip().startswith("Note:") or l.strip() == "":
                     chunk_lines.append(l)
                     i += 1
-                    # stop after a blank line following table rows
                     if l.strip() == "" and chunk_lines[-2].strip() == "":
                         break
                 else:
@@ -150,20 +185,17 @@ def parse_pdf_marker(path: Path, converter: PdfConverter) -> tuple[str, list[str
                 table_chunks.append(chunk)
             continue
 
-        # FIGURE: caption line (the actual image refs ![](...) are discarded)
+        # FIGURE: caption line only (image refs already discarded above)
         if re.match(r"^FIGURE\s+\d+", clean_line):
-            chunk = clean_line
-            if len(chunk) >= 50:
-                figure_chunks.append(chunk)
+            if len(clean_line) >= 50:
+                figure_chunks.append(clean_line)
             i += 1
             continue
 
-        # Image refs — discard, no useful text content
-        if re.match(r"^!\[", line.strip()):
-            i += 1
-            continue
+        # Strip markdown link syntax [text](url) → text in prose
+        clean_line = re.sub(r"\[([^\]]+)\]\([^\)]+\)", r"\1", clean_line)
 
-        prose_lines.append(line)
+        prose_lines.append(clean_line)
         i += 1
 
     prose_text = "\n".join(prose_lines)

@@ -1,9 +1,9 @@
 """
-Parsing validation tests.
-Verifies that text extraction works correctly for different file formats
-and layout types (1-column, 2-column, mixed layout PDFs).
+Parsing validation tests for Marker-based PDF ingestion.
+Verifies prose/table/figure extraction on a representative paper.
 
 Run: pytest tests/test_parsing.py -v
+Dumps chunks to tests/singer_chunks.txt for manual inspection.
 """
 
 import sys
@@ -11,88 +11,136 @@ import os
 import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from ingest import parse_pdf, parse_html, parse_csv, detect_columns, extract_chunks
-import pdfplumber
+from ingest import parse_pdf_marker, extract_chunks
+from marker.converters.pdf import PdfConverter
+from marker.models import create_model_dict
 
 
-# --- PDF: Singer 2024 (mixed layout — 1-col abstract + 2-col body with tables/figures) ---
-# Known limitation: affiliation sidebars and funding blocks bleed into body text
-# because the narrow sidebar columns are not cleanly separated by column detection.
+# --- Shared Marker converter (expensive — load once per session) ---
+
+@pytest.fixture(scope="session")
+def converter():
+    return PdfConverter(artifact_dict=create_model_dict())
+
+
+# --- Singer 2024: mixed layout, tables, figures ---
 
 @pytest.fixture(scope="module")
-def singer_text():
-    text = parse_pdf("data/singer_2024_38989636.pdf")
-    chunks = extract_chunks(text)
+def singer_parsed(converter):
+    prose, tables, figures = parse_pdf_marker(
+        "data/singer_2024_38989636.pdf", converter
+    )
+    prose_chunks = extract_chunks(prose)
+    all_chunks = prose_chunks + tables + figures
+
     with open("tests/singer_chunks.txt", "w") as f:
-        for i, chunk in enumerate(chunks, start=1):
-            f.write(f"--- CHUNK {i} ---\n{chunk}\n\n")
-    return text
+        f.write(f"=== PROSE CHUNKS ({len(prose_chunks)}) ===\n\n")
+        for i, c in enumerate(prose_chunks, 1):
+            f.write(f"--- PROSE {i} ---\n{c}\n\n")
+        f.write(f"=== TABLE CHUNKS ({len(tables)}) ===\n\n")
+        for i, c in enumerate(tables, 1):
+            f.write(f"--- TABLE {i} ---\n{c}\n\n")
+        f.write(f"=== FIGURE CHUNKS ({len(figures)}) ===\n\n")
+        for i, c in enumerate(figures, 1):
+            f.write(f"--- FIGURE {i} ---\n{c}\n\n")
 
-def test_singer_text_non_empty(singer_text):
-    assert len(singer_text.strip()) > 1000
-
-def test_singer_abstract_present(singer_text):
-    """Core abstract sentence should survive extraction."""
-    assert "Short sequences that mediate interactions with modular binding domains" in singer_text
-
-def test_singer_keywords_present(singer_text):
-    assert "EVH1" in singer_text
-
-def test_singer_body_content_present(singer_text):
-    """Key scientific claim from 2-col body should be present."""
-    assert "incomplete divergence" in singer_text
-
-def test_singer_author_present(singer_text):
-    assert "Singer" in singer_text
+    return prose, tables, figures, all_chunks
 
 
-# --- PDF: Column detection ---
+def test_singer_prose_non_empty(singer_parsed):
+    prose, *_ = singer_parsed
+    assert len(prose.strip()) > 1000
 
-def test_column_detection_two_column():
-    """A typical 2-col academic paper page should detect 2 columns."""
-    with pdfplumber.open("data/singer_2024_38989636.pdf") as pdf:
-        # Page 2+ are typically 2-column body
-        for page in pdf.pages[1:4]:
-            cols = detect_columns(page, pixel_thresh=15)
-            # At least some body pages should be detected as 2-col
-            if cols == 2:
-                return
-    pytest.fail("No 2-column pages detected in singer_2024 — column detection may be broken")
+def test_singer_abstract_present(singer_parsed):
+    prose, *_ = singer_parsed
+    assert "Short sequences that mediate interactions with modular binding domains" in prose
 
-def test_column_detection_first_page():
-    """First page of Singer 2024 has a mixed layout — should not crash."""
-    with pdfplumber.open("data/singer_2024_38989636.pdf") as pdf:
-        page = pdf.pages[0]
-        cols = detect_columns(page, pixel_thresh=15)
-        assert cols in (1, 2)
+def test_singer_keywords_present(singer_parsed):
+    prose, *_ = singer_parsed
+    assert "EVH1" in prose
+
+def test_singer_body_content_present(singer_parsed):
+    prose, *_ = singer_parsed
+    assert "incomplete divergence" in prose
+
+def test_singer_has_tables(singer_parsed):
+    _, tables, _, _ = singer_parsed
+    assert len(tables) > 0, "Expected at least one table chunk"
+
+def test_singer_table_chunks_have_pipe_rows(singer_parsed):
+    _, tables, _, _ = singer_parsed
+    for t in tables:
+        assert "|" in t, f"Table chunk missing markdown rows:\n{t}"
+
+def test_singer_has_figures(singer_parsed):
+    _, _, figures, _ = singer_parsed
+    assert len(figures) > 0, "Expected at least one figure chunk"
+
+def test_singer_no_image_refs_in_chunks(singer_parsed):
+    *_, all_chunks = singer_parsed
+    image_refs = [c for c in all_chunks if c.strip().startswith("![")]
+    assert not image_refs, f"Found {len(image_refs)} raw image ref chunks"
+
+def test_singer_no_empty_chunks(singer_parsed):
+    *_, all_chunks = singer_parsed
+    empty = [c for c in all_chunks if not c.strip()]
+    assert not empty, f"Found {len(empty)} empty chunks"
+
+def test_singer_prose_chunks_within_bounds(singer_parsed):
+    import config
+    prose, tables, figures, _ = singer_parsed
+    prose_chunks = extract_chunks(prose)
+    oversized = [c for c in prose_chunks if len(c) > config.CHUNK_SIZE * 2]
+    assert not oversized, f"{len(oversized)} prose chunks exceed 2x CHUNK_SIZE"
+
+def test_singer_table_chunks_within_embedding_limit(singer_parsed):
+    # Tables bypass the splitter — check they won't be silently truncated by the encoder.
+    # all-mpnet-base-v2 max is 384 tokens (~1500 chars). Flag anything 2x over CHUNK_SIZE
+    # as a sign a table is too large to embed meaningfully.
+    import config
+    _, tables, _, _ = singer_parsed
+    oversized = [t for t in tables if len(t) > config.CHUNK_SIZE * 2]
+    assert not oversized, (
+        f"{len(oversized)} table chunks likely exceed embedding token limit: "
+        + str([len(t) for t in oversized])
+    )
 
 
-# --- PDF: Older 2-col paper (Kofler 2005) ---
+# --- Kofler 2005: older 2-col paper, GYF domain ---
 
 @pytest.fixture(scope="module")
-def kofler_text():
-    return parse_pdf("data/kofler_2005_16120600.pdf")
+def kofler_parsed(converter):
+    prose, tables, figures = parse_pdf_marker(
+        "data/kofler_2005_16120600.pdf", converter
+    )
+    return prose, tables, figures
 
-def test_kofler_text_non_empty(kofler_text):
-    assert len(kofler_text.strip()) > 1000
+def test_kofler_prose_non_empty(kofler_parsed):
+    prose, *_ = kofler_parsed
+    assert len(prose.strip()) > 1000
 
-def test_kofler_known_content(kofler_text):
-    """GYF domain content should be present."""
-    assert "GYF" in kofler_text
+def test_kofler_known_content(kofler_parsed):
+    prose, *_ = kofler_parsed
+    assert "GYF" in prose
 
-def test_kofler_reasonable_length(kofler_text):
-    """Multi-page paper should produce substantial text."""
-    assert len(kofler_text) > 5000
+def test_kofler_reasonable_length(kofler_parsed):
+    prose, *_ = kofler_parsed
+    assert len(prose) > 5000
 
 
-# --- PDF: Short paper (Golemi-Kotra 2003 — only 26 chunks, shortest in corpus) ---
+# --- Golemi-Kotra 2003: shortest paper in corpus ---
 
 @pytest.fixture(scope="module")
-def golemi_text():
-    return parse_pdf("data/golemi-kotra_2003_14709031.pdf")
+def golemi_parsed(converter):
+    prose, tables, figures = parse_pdf_marker(
+        "data/golemi-kotra_2003_14709031.pdf", converter
+    )
+    return prose, tables, figures
 
-def test_golemi_non_empty(golemi_text):
-    assert len(golemi_text.strip()) > 500
+def test_golemi_non_empty(golemi_parsed):
+    prose, *_ = golemi_parsed
+    assert len(prose.strip()) > 500
 
-def test_golemi_known_content(golemi_text):
-    assert "EVH1" in golemi_text or "Mena" in golemi_text
+def test_golemi_known_content(golemi_parsed):
+    prose, *_ = golemi_parsed
+    assert "EVH1" in prose or "Mena" in prose
