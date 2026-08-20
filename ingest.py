@@ -109,6 +109,17 @@ def parse_pdf(path: str) -> str:
 
     return "\n\n".join(full_text) #very clear a new page starts
  
+def _compress_table(chunk: str) -> str:
+    """Strip padding whitespace from markdown pipe-row cells."""
+    lines = []
+    for line in chunk.split("\n"):
+        if "|" in line and line.strip().startswith("|"):
+            cells = [c.strip() for c in line.split("|")]
+            line = "| " + " | ".join(cells) + " |"
+        lines.append(line)
+    return "\n".join(lines)
+
+
 def parse_pdf_marker(path: Path, converter: PdfConverter) -> tuple[str, list[str], list[str]]:
     """
     Layout-aware PDF parsing using Marker (trained on scientific papers).
@@ -180,7 +191,7 @@ def parse_pdf_marker(path: Path, converter: PdfConverter) -> tuple[str, list[str
                         break
                 else:
                     break
-            chunk = "\n".join(chunk_lines).strip()
+            chunk = _compress_table("\n".join(chunk_lines).strip())
             if len(chunk) >= 100:
                 table_chunks.append(chunk)
             continue
@@ -279,9 +290,9 @@ def extract_chunks(text: str) -> list[str]:
     return [c for c in chunks if len(c.strip()) >= 100]
 
 
-def ingest_tables(paths: list[Path], log: dict, force: bool):
+def ingest_tables(paths: list[Path], log: dict, force: bool, db_path: str = None):
     """Load CSV/XLSX files into SQLite. Each file becomes its own table."""
-    con = sqlite3.connect(config.DB_PATH)
+    con = sqlite3.connect(db_path or config.DB_PATH)
 
     for p in paths:
         if not force and already_ingested(p, log):

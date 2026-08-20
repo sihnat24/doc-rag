@@ -113,7 +113,11 @@ Intended as interview prep — not documentation.
 
 **Unresolved — chunk overlap is still mid-sentence:** Even with larger chunks and clean cut points, the overlap backtrack is dumb — it goes back exactly `CHUNK_OVERLAP` chars regardless of where that lands. So the start of every non-first chunk is likely mid-sentence. The overlap didn't cause the original bad cut, but it reintroduces a mid-sentence fragment at every boundary. The real fix is a sentence-aware splitter (e.g., pack whole sentences up to the size limit, overlap by whole sentences). Not implemented — retrieval still works because the core content is intact. Logged as a known imprecision.
 
-**Table chunks bypass the splitter — embedding truncation risk:** Tables are inserted as pre-formed chunks and never pass through `RecursiveCharacterTextSplitter`. Two tables in Singer 2024 exceeded 2x `CHUNK_SIZE` (~2800 chars), which is well past the encoder's ~1500-char practical limit. Those tables are silently truncated during embedding — rows near the bottom are invisible to retrieval. No fix implemented yet; added a test that flags tables over 2x `CHUNK_SIZE` as a warning.
+**Table chunks bypass the splitter — embedding truncation risk:** Tables are inserted as pre-formed chunks and never pass through `RecursiveCharacterTextSplitter`. One table in Singer 2024 exceeded 2x `CHUNK_SIZE` (~2800 chars), well past the encoder's ~1500-char practical limit. Rows near the bottom would be silently truncated during embedding — invisible to retrieval.
+
+Fix: added `_compress_table()` — strips alignment padding whitespace from every pipe-row cell before the chunk is stored. Markdown tables from Marker have heavy cell padding for readability; compressing it recovers significant space without losing any data.
+
+Limitation: whitespace stripping only helps if padding was the problem. A table that is genuinely large (many rows, wide columns with real content) will still exceed the limit after compression. For that case, the right fix is row-splitting — chunk the table into groups of N rows, repeating the caption and header in each chunk so every piece is self-contained and retrievable. Not implemented; logged as a known gap.
 
 **Takeaway:** Chunk size and embedding model max length are coupled. Tuning one without knowing the other's ceiling is wasted effort. Always check the model's `max_seq_length` before pushing chunk size.
 
