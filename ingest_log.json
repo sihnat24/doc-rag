@@ -1,92 +1,147 @@
 {
-  "metadata.csv": {
-    "hash": "48e461ef0d1da9f78936c747a2d6b665",
-    "ingested_at": "2026-08-07T13:32:03.172198",
+  "WH1_dataset.xlsx": {
+    "hash": "61e42967816128323529c9ed7f55ea17",
+    "ingested_at": "2026-08-19T17:54:54.177731",
     "type": "table"
   },
-  "risk_budget_tracker.csv": {
-    "hash": "990c1017c747e20720dab09eed9e7928",
-    "ingested_at": "2026-08-07T13:32:03.176725",
+  "GYF_dataset.xlsx": {
+    "hash": "85b14344c5033edc24386462bc2dee94",
+    "ingested_at": "2026-08-19T17:54:54.402782",
     "type": "table"
   },
-  "paper_04_berglund_1982.pdf": {
-    "hash": "3515c3f09dfd31c7d79e1b41e9d2a96d",
-    "ingested_at": "2026-08-07T13:32:09.557589",
+  "gertler_1996_8861907.pdf": {
+    "hash": "40035d34a09b911be1557938b858e8c8",
+    "ingested_at": "2026-08-19T17:55:02.298932",
     "type": "prose"
   },
-  "paper_07_wylie_2013.pdf": {
-    "hash": "bf29ecd16c3c71b02ceadf640addb010",
-    "ingested_at": "2026-08-07T13:32:10.381410",
+  "zimmerman_2003_12857736.pdf": {
+    "hash": "0b44e82e3a9cbe65f6303bd7f24f1f10",
+    "ingested_at": "2026-08-19T17:56:36.890514",
     "type": "prose"
   },
-  "paper_08_desbrow_2012.pdf": {
-    "hash": "cd6e3adbac9d2f7bc6fb2092432990fb",
-    "ingested_at": "2026-08-07T13:32:10.853431",
+  "kofler_2006_16403013.pdf": {
+    "hash": "c3f21449eec35b265b855e15f70089ae",
+    "ingested_at": "2026-08-19T17:57:01.720869",
     "type": "prose"
   },
-  "paper_01_chen_2019.pdf": {
-    "hash": "9bae8b66112af9619dab74d2241c317d",
-    "ingested_at": "2026-08-07T13:32:11.537663",
+  "prehoda_1999_10338211.pdf": {
+    "hash": "478c56306023386f090707a4630dcda2",
+    "ingested_at": "2026-08-19T17:59:33.711276",
     "type": "prose"
   },
-  "paper_09_knols_2005.pdf": {
-    "hash": "28cef261ba77e4613ea77353a8c11fe5",
-    "ingested_at": "2026-08-07T13:32:12.498384",
+  "freund_1999_10404223.pdf": {
+    "hash": "7c660a996ff64f5f596d4f743d73f3ae",
+    "ingested_at": "2026-08-19T18:02:19.974993",
     "type": "prose"
   },
-  "paper_02_filip_stachnik_2020.pdf": {
-    "hash": "0f6ae801c7687ac37552d0820c905302",
-    "ingested_at": "2026-08-07T13:32:12.925719",
+  "kofler_2005_16000308.pdf": {
+    "hash": "432bd3efaf6c305066499d3cd14a382d",
+    "ingested_at": "2026-08-19T18:05:36.066764",
     "type": "prose"
   },
-  "paper_05_bond_1986.pdf": {
-    "hash": "83072293fc9ad261c1d78a39ba91c10f",
-    "ingested_at": "2026-08-07T13:32:13.312696",
+  "boeda_2007_18158903.pdf": {
+    "hash": "d73be434a5b1e978473bcb9b963a7625",
+    "ingested_at": "2026-08-19T18:05:51.774309",
     "type": "prose"
   },
-  "paper_06_graham_1991.pdf": {
-    "hash": "d546b3416ae43d7f4382b9f75f2305e5",
-    "ingested_at": "2026-08-07T13:32:14.135314",
+  "singer_2024_38989636.pdf": {
+    "hash": "7e4694e6dd74388c721d12dc231dcae2",
+    "ingested_at": "2026-08-19T18:06:53.175439",
     "type": "prose"
   },
-  "paper_03_giraldez_2020.pdf": {
-    "hash": "3ee34644523ec36cbd5e1a3c21b96d2d",
-    "ingested_at": "2026-08-07T13:32:14.658025",
+  "ueki_2019_31585692.pdf": {
+    "hash": "bbb67831c86ee210bc3ef9f59b33765d",
+    "ingested_at": "2026-08-19T18:07:08.819727",
     "type": "prose"
   },
-  "paper_10_stern_2019.pdf": {
-    "hash": "1c771ef31edeb4d787f8abe43c86edce",
-    "ingested_at": "2026-08-07T13:32:15.299715",
+  "barzik_2001_11491285.pdf": {
+    "hash": "635282a538fa6aea457f6435c4b43c02",
+    "ingested_at": "2026-08-19T18:11:30.913780",
     "type": "prose"
   },
-  "attention.pdf": {
-    "hash": "18e1b007a1dab45b30cc861ba2dfda25",
-    "ingested_at": "2026-08-07T13:32:16.542752",
+  "nishizawa_1998_9843987.pdf": {
+    "hash": "55b9f0ca7e27e51e742d5db767f1a31a",
+    "ingested_at": "2026-08-19T18:17:29.540453",
     "type": "prose"
   },
-  "contractor_performance_policy.html": {
-    "hash": "4f2d40dec59c3c3dd79f0f5537fbb6dd",
-    "ingested_at": "2026-08-07T13:32:16.552019",
+  "kofler_2004_15105431.pdf": {
+    "hash": "f03524a23585ec57e3f40f8cf3e0f3ea",
+    "ingested_at": "2026-08-19T18:18:31.661364",
     "type": "prose"
   },
-  "image generators are generalist vision leaners.pdf": {
-    "hash": "1d6bab4556b4d6c774e2d7ce55e19d41",
-    "ingested_at": "2026-08-07T13:32:17.510409",
+  "holtzman_2007_17973491.pdf": {
+    "hash": "54523676ed69b3f16beaa08f8c691907",
+    "ingested_at": "2026-08-19T18:23:34.620069",
     "type": "prose"
   },
-  "risk_management_policy.html": {
-    "hash": "ba179a20d7c77c811b577dae570d64bb",
-    "ingested_at": "2026-08-07T13:32:17.512454",
+  "beneken_2000_10798399.pdf": {
+    "hash": "431c4ded3dd75c11f437efe821fdfdd5",
+    "ingested_at": "2026-08-19T18:24:39.932800",
     "type": "prose"
   },
-  "status_brief.docx": {
-    "hash": "ba1d8fafd05c505f23178eada89ef682",
-    "ingested_at": "2026-08-07T13:32:17.518450",
+  "peterson_2009_19273103.pdf": {
+    "hash": "b5313ff8db8a06a0c1952ac6c5ac0cbe",
+    "ingested_at": "2026-08-19T18:27:02.196264",
     "type": "prose"
   },
-  "koala.pdf": {
-    "hash": "1edb23163329c5c0d02e750a899530d9",
-    "ingested_at": "2026-08-07T13:32:19.294440",
+  "bertazon_2024_39308865.pdf": {
+    "hash": "8defa71f81c9b41579e4a819b84f0f06",
+    "ingested_at": "2026-08-19T18:27:08.361620",
+    "type": "prose"
+  },
+  "carl_1999_10498433.pdf": {
+    "hash": "60654fbbcb9cd40721dc468a6c361ef1",
+    "ingested_at": "2026-08-19T18:27:10.400393",
+    "type": "prose"
+  },
+  "ball_2000_10990454.pdf": {
+    "hash": "2ba51b05888a475514cd351171223856",
+    "ingested_at": "2026-08-19T18:49:27.909922",
+    "type": "prose"
+  },
+  "freund_2002_12426371.pdf": {
+    "hash": "24526ad04228a27dc7c42093850f0629",
+    "ingested_at": "2026-08-19T19:11:58.142104",
+    "type": "prose"
+  },
+  "uryga-polowy_2008_18803191.pdf": {
+    "hash": "06bfcb33847d0ec4329ce685d29577cd",
+    "ingested_at": "2026-08-19T19:20:27.275256",
+    "type": "prose"
+  },
+  "volkman_2002_12437929.pdf": {
+    "hash": "8509276e4b23dd960f7eb56b7c3bbe87",
+    "ingested_at": "2026-08-19T19:21:23.445580",
+    "type": "prose"
+  },
+  "kofler_2009_19483244.pdf": {
+    "hash": "faafba92ccbd53be8c7558af4dbf4890",
+    "ingested_at": "2026-08-19T19:22:32.147403",
+    "type": "prose"
+  },
+  "hale_2012_22209900.pdf": {
+    "hash": "07fc4242d0bfac25d469389fd6b4c72f",
+    "ingested_at": "2026-08-19T19:22:42.542235",
+    "type": "prose"
+  },
+  "gu_2005_15850374.pdf": {
+    "hash": "6c8b5b7a4cd1b145b8bddd2ad2741e1b",
+    "ingested_at": "2026-08-19T19:24:11.057942",
+    "type": "prose"
+  },
+  "kofler_2005_16120600.pdf": {
+    "hash": "f32035aabcc98fafffe31b78a2e31e5d",
+    "ingested_at": "2026-08-19T19:25:27.553782",
+    "type": "prose"
+  },
+  "zettl_2002_12372256.pdf": {
+    "hash": "44e9de5fe15bb590a53dcb16a53c6762",
+    "ingested_at": "2026-08-19T19:26:47.228834",
+    "type": "prose"
+  },
+  "golemi-kotra_2003_14709031.pdf": {
+    "hash": "6362fff805c098c07ca4b3741803022d",
+    "ingested_at": "2026-08-19T19:26:47.874875",
     "type": "prose"
   }
 }

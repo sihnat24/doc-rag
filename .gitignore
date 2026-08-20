@@ -30,6 +30,8 @@ models/
 
 # PDFs and data files (large, not source code)
 data/**/*.pdf
+data/**/*.xlsx
+data/**/*.csv
 data/noise/
 data/raw/
 
@@ -39,6 +41,12 @@ data/raw/
 
 # macOS
 .DS_Store
+
+# Generated test output
+tests/*.txt
+
+# Legacy data
+legacy_data/
 
 # IDE
 .vscode/

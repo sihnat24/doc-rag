@@ -1,0 +1,422 @@
+[
+  {
+    "id": "Q01",
+    "bucket": "single_doc",
+    "question": "What constitutes an automatic test failure during Propulsion SAT turbine seal integrity testing?",
+    "ground_truth": "Any leakage detected during seal integrity testing constitutes an automatic test failure requiring root cause analysis and retest before the SAT can be signed off.",
+    "expected_behavior": "",
+    "expected_sources": [
+      "TEMP_doc.pdf"
+    ],
+    "retrieved_sources": [
+      "TEMP_doc.pdf"
+    ],
+    "tools_called": [
+      "search_knowledge_base"
+    ],
+    "answer": "Based on the search of local documents (TEMP_doc.pdf), an automatic test failure during Propulsion SAT turbine seal integrity testing is constituted by any leakage detected during the seal integrity testing. This requires root cause analysis and retest before the SAT can be signed off.",
+    "recall_at_k": 1.0,
+    "routing_correct": true,
+    "trap_handled": null,
+    "faithful": false,
+    "faithful_note": "UNFAITHFUL\n\nThe answer states that \"this requires root cause analysis and retest\", which is not explicitly mentioned in any of the provided sources, implying that the model added its own knowledge or assumption about the process for resolving test failures."
+  },
+  {
+    "id": "Q02",
+    "bucket": "single_doc",
+    "question": "When is System Integration Test planned to begin?",
+    "ground_truth": "System Integration Test is planned to begin in March 2025.",
+    "expected_behavior": "",
+    "expected_sources": [
+      "TEMP_doc.pdf"
+    ],
+    "retrieved_sources": [
+      "TEMP_doc.pdf"
+    ],
+    "tools_called": [
+      "search_knowledge_base"
+    ],
+    "answer": "Based on the search results, I was able to find information about System Integration Test (SIT) in the provided documents.\n\nAccording to source 1: TEMP_doc.pdf, Test Event Subsystem, the planned start date for System Integration Test is November 2024 and the planned completion date is December 2024.",
+    "recall_at_k": 1.0,
+    "routing_correct": true,
+    "trap_handled": null,
+    "faithful": true,
+    "faithful_note": "FAITHFUL\n\nThe answer stays within the information provided in the context because it accurately quotes specific dates from source 1 (TEMP_doc.pdf) as the planned start and completion dates for System Integration Test."
+  },
+  {
+    "id": "Q03",
+    "bucket": "single_doc",
+    "question": "What is the risk status of the Propulsion subsystem as of Q4 FY2024, and what is driving it?",
+    "ground_truth": "Propulsion is at Red status in Q4 FY2024. The turbine seal issue remained unresolved, the corrective action plan was only partially effective, and a 30-day cure notice was issued on 2024-11-02.",
+    "expected_behavior": "",
+    "expected_sources": [
+      "risk_budget_tracker.csv"
+    ],
+    "retrieved_sources": [],
+    "tools_called": [
+      "query_spreadsheet"
+    ],
+    "answer": "The Propulsion subsystem has a Red risk status as of Q4 FY2024, and the driving factor behind this is the unresolved turbine seal issue, which may impact the schedule for system integration testing.",
+    "recall_at_k": 0.0,
+    "routing_correct": true,
+    "trap_handled": null,
+    "faithful": false,
+    "faithful_note": "UNFAITHFUL\nThe answer introduces the term \"system integration test\", which is not present in the original context, and also uses the phrase \"as of Q4 FY2024\" which is an inference rather than a direct statement from the provided table."
+  },
+  {
+    "id": "Q04",
+    "bucket": "single_doc",
+    "question": "When did the Power Distribution subsystem retire its single-source supplier risk, and what was the outcome?",
+    "ground_truth": "The single-source capacitor bank risk was retired in Q3 FY2024 when an alternative supplier was qualified. The risk status moved from Yellow to Green and the risk was formally closed.",
+    "expected_behavior": "",
+    "expected_sources": [
+      "risk_budget_tracker.csv"
+    ],
+    "retrieved_sources": [],
+    "tools_called": [
+      "query_spreadsheet"
+    ],
+    "answer": "I don't have information on that in the available documents.",
+    "recall_at_k": 0.0,
+    "routing_correct": true,
+    "trap_handled": null,
+    "faithful": true,
+    "faithful_note": "The answer is FAITHFUL because it accurately reflects the fact that there were no results returned for the query and provides a direct response based on the available information."
+  },
+  {
+    "id": "Q05",
+    "bucket": "single_doc",
+    "question": "What composite score did Apex Defense Systems receive for the Propulsion subsystem evaluation, and what adjectival rating does that correspond to?",
+    "ground_truth": "Apex Defense Systems received a composite score of 81.7, corresponding to a Good rating.",
+    "expected_behavior": "",
+    "expected_sources": [
+      "eval_report.pdf"
+    ],
+    "retrieved_sources": [],
+    "tools_called": [
+      "query_spreadsheet"
+    ],
+    "answer": "Based on the query results, Apex Defense Systems received a composite score that corresponds to an adjectival rating of \"Yellow\". This is because their risk status for the Propulsion subsystem evaluation was listed as \"Yellow\" in all instances where they were under evaluation. \n\nNote: The exact adjectival rating corresponding to 'Yellow' is not specified within the provided knowledge base, but it typically indicates a moderate level of concern or risk.",
+    "recall_at_k": 0.0,
+    "routing_correct": false,
+    "trap_handled": null,
+    "faithful": false,
+    "faithful_note": "UNFAITHFUL. The answer mentions \"all instances where they were under evaluation\" and implies that Apex Defense Systems received an allocation of allocated_budget_usd for the Propulsion subsystem evaluation, which is not mentioned in the provided context."
+  },
+  {
+    "id": "Q06",
+    "bucket": "single_doc",
+    "question": "How many proposals were received for the Power Distribution subsystem, and was a competitive evaluation conducted?",
+    "ground_truth": "Only one proposal was received for Power Distribution, from Apex Defense Systems. No competitive evaluation was conducted; the single offer was evaluated for technical acceptability only.",
+    "expected_behavior": "",
+    "expected_sources": [
+      "eval_report.pdf"
+    ],
+    "retrieved_sources": [],
+    "tools_called": [
+      "query_spreadsheet"
+    ],
+    "answer": "To correct the SQL query:\n\n{\"name\": \"query_spreadsheet\", \"parameters\": {\"sql\":\"SELECT COUNT(*) as proposal_count, competitive_eval FROM risk_budget_tracker WHERE subsystem = 'Power Distribution';\"}}",
+    "recall_at_k": 0.0,
+    "routing_correct": false,
+    "trap_handled": null,
+    "faithful": false,
+    "faithful_note": "UNFAITHFUL.\n\nThe answer adds new code and parameters (\"query_spreadsheet\", \"risk_budget_tracker\") that are not present in the original SQL error message, suggesting external knowledge or assumptions rather than a straightforward correction to the provided query."
+  },
+  {
+    "id": "Q07",
+    "bucket": "single_doc",
+    "question": "When was the cure notice issued against Apex Defense Systems, and what is the next required action?",
+    "ground_truth": "The cure notice was issued on 2024-11-02. The cure notice response is due 2024-12-02, after which the Program Manager will assess the response and determine the path forward.",
+    "expected_behavior": "",
+    "expected_sources": [
+      "status_brief.docx"
+    ],
+    "retrieved_sources": [
+      "risk_management_policy.html"
+    ],
+    "tools_called": [
+      "search_knowledge_base"
+    ],
+    "answer": "Based on my search of the knowledge base, I was unable to find specific information about when the cure notice was issued against Apex Defense Systems or what the next required action is.\n\nHowever, according to the Program Management Handbook (p. 23), \"The Contracting Officer shall evaluate whether a cure notice is appropriate\" in cases where the contractor's failure to perform is a primary or contributing cause of a Red risk designation.\n\nIf you would like, I can try searching again with more specific search terms, or we can look into other possible sources for this information.",
+    "recall_at_k": 0.0,
+    "routing_correct": true,
+    "trap_handled": null,
+    "faithful": false,
+    "faithful_note": "UNFAITHFUL.\n\nThe answer introduces external information from the \"Program Management Handbook\" (p. 23) not present in the retrieved context, which is a direct quote from source 1 and 7."
+  },
+  {
+    "id": "Q08",
+    "bucket": "single_doc",
+    "question": "What does the risk management policy require within 30 days of a risk being elevated to Yellow status?",
+    "ground_truth": "A documented mitigation plan with assigned ownership and a target retirement date must be submitted to the COR within 30 calendar days of the risk being elevated to Yellow status.",
+    "expected_behavior": "",
+    "expected_sources": [
+      "risk_management_policy.html"
+    ],
+    "retrieved_sources": [
+      "risk_management_policy.html"
+    ],
+    "tools_called": [
+      "search_knowledge_base"
+    ],
+    "answer": "Based on the search results, the risk management policy requires that a documented mitigation plan with assigned ownership and a target retirement date be submitted to the Contracting Officer's Representative (COR) within 30 calendar days of a risk being elevated to Yellow status.",
+    "recall_at_k": 1.0,
+    "routing_correct": true,
+    "trap_handled": null,
+    "faithful": true,
+    "faithful_note": "The answer is FAITHFUL.\n\nThe answer accurately paraphrases and summarizes the requirement stated in source 2: \"Yellow risks require a documented mitigation plan with assigned ownership and a target retirement date. The mitigation plan shall be submitted to the COR within 30 calendar days of the risk being elevated to Yellow status.\""
+  },
+  {
+    "id": "Q09",
+    "bucket": "single_doc",
+    "question": "What is the definition of an Exceptional CPAR rating?",
+    "ground_truth": "An Exceptional rating indicates that the contractor's performance significantly exceeded contract requirements in a manner that was of benefit to the Government. It is rare and must be supported by specific documented examples of value added beyond the contract scope.",
+    "expected_behavior": "",
+    "expected_sources": [
+      "contractor_performance_policy.html"
+    ],
+    "retrieved_sources": [],
+    "tools_called": [],
+    "answer": "{\"name\": \"web_search\", \"parameters\": {\"query\": \"Exceptional CPAR rating definition\"}}",
+    "recall_at_k": 0.0,
+    "routing_correct": false,
+    "trap_handled": null,
+    "faithful": null,
+    "faithful_note": "No context retrieved \u2014 faithfulness not applicable."
+  },
+  {
+    "id": "Q10",
+    "bucket": "single_doc",
+    "question": "What firmware requirement must be satisfied before Navigation SAT can be executed?",
+    "ground_truth": "All firmware loaded on the navigation unit at the time of SAT must be the approved production release version. Pre-production or developmental firmware versions are not acceptable for SAT execution.",
+    "expected_behavior": "",
+    "expected_sources": [
+      "TEMP_doc.pdf"
+    ],
+    "retrieved_sources": [
+      "TEMP_doc.pdf"
+    ],
+    "tools_called": [
+      "search_knowledge_base"
+    ],
+    "answer": "The firmware requirement that must be satisfied before Navigation SAT can be executed is that only approved production firmware must be loaded at SAT, as specified in Section 3.2 of the TEMP document. Meridian Technologies has committed to delivering a production firmware patch in Q1 FY2025, and provided this commitment is met, no impact to the SIT schedule is anticipated.",
+    "recall_at_k": 1.0,
+    "routing_correct": true,
+    "trap_handled": null,
+    "faithful": false,
+    "faithful_note": "UNFAITHFUL\n\nThe answer adds additional information not present in the original context, specifically that \"Meridian Technologies has committed to delivering a production firmware patch in Q1 FY2025\", which is only mentioned in the first and second sources as an anticipated event, but not as a fact provided by Meridian Technologies."
+  },
+  {
+    "id": "Q11",
+    "bucket": "cross_doc",
+    "question": "Given the current Propulsion subsystem status, can the program satisfy SIT entry criterion 4.1?",
+    "ground_truth": "No. TEMP criterion 4.1 requires all four SATs to be complete with no open failure reports. As of Q4 FY2024, Propulsion is at Red status with an unresolved turbine seal deficiency. The Propulsion SAT requires zero leakage in seal integrity testing, which cannot pass while this deficiency remains open. Until Propulsion SAT is successfully completed, criterion 4.1 cannot be satisfied and SIT cannot begin.",
+    "expected_behavior": "",
+    "expected_sources": [
+      "TEMP_doc.pdf",
+      "status_brief.docx"
+    ],
+    "retrieved_sources": [
+      "status_brief.docx",
+      "TEMP_doc.pdf",
+      "eval_report.pdf"
+    ],
+    "tools_called": [
+      "search_knowledge_base"
+    ],
+    "answer": "Based on the search results, I do not have information on whether the program can satisfy SIT entry criterion 4.1 for the Propulsion subsystem. The documents provided discuss the status of the Propulsion subsystem, its acceptance test requirements, and upcoming milestones, but they do not specifically address satisfaction of SIT entry criterion 4.1.\n\nHowever, it appears that there is a pending assessment by Engineering to confirm SIT entry criteria with a revised March 2025 date (status_brief.docx). This may indicate that the program is taking steps to ensure compliance with SIT entry criterion 4.1, but more information is needed to determine the current status.\n\nIf you would like to refine your question or provide additional context, I would be happy to try and assist further.",
+    "recall_at_k": 1.0,
+    "routing_correct": true,
+    "trap_handled": null,
+    "faithful": false,
+    "faithful_note": "UNFAITHFUL. The answer introduces a new interpretation about \"taking steps\" to ensure compliance with SIT entry criterion 4.1, which is not explicitly stated in the provided context and adds an implicit assumption that may not be supported by the information given."
+  },
+  {
+    "id": "Q12",
+    "bucket": "cross_doc",
+    "question": "Which vendor is currently responsible for both a Red-status and a Green-status subsystem, and what are those subsystems?",
+    "ground_truth": "Apex Defense Systems is responsible for both Propulsion (Red status as of Q4 FY2024, due to the unresolved turbine seal deficiency) and Power Distribution (Green status as of Q3 FY2024, following retirement of the single-source capacitor bank risk).",
+    "expected_behavior": "",
+    "expected_sources": [
+      "risk_budget_tracker.csv",
+      "eval_report.pdf"
+    ],
+    "retrieved_sources": [],
+    "tools_called": [
+      "query_spreadsheet"
+    ],
+    "answer": "The vendor currently responsible for both a Red-status and a Green-status subsystem is Apex Defense Systems. The specific subsystems are:\n\n* A Red-status subsystem: \n* A Green-status subsystem: \n\nNote that the specific subsystems are not listed in the query result. If you need more information, please provide the exact question or ask another question about these vendors and their subsystems.",
+    "recall_at_k": 0.0,
+    "routing_correct": true,
+    "trap_handled": null,
+    "faithful": false,
+    "faithful_note": "UNFAITHFUL. The answer adds an implication that there are specific Red- and Green-status subsystems for which the vendor is responsible, even though the query result only mentions that Apex Defense Systems has responsibility but does not provide the names of those subsystems."
+  },
+  {
+    "id": "Q13",
+    "bucket": "cross_doc",
+    "question": "The technical evaluation report noted a single-source supply chain risk for Apex Defense Systems on the Power Distribution subsystem. What mitigation was required, and was it ultimately successful?",
+    "ground_truth": "The evaluation report required a mitigation plan within 60 days of contract award and flagged the single-source capacitor bank as a program-level risk. Per the risk tracker, a Yellow risk was carried in Q1 and Q2 FY2024 while an alternative supplier was being qualified. The alternative was successfully qualified in Q3 FY2024, the risk was formally retired, and Power Distribution moved to Green status.",
+    "expected_behavior": "",
+    "expected_sources": [
+      "eval_report.pdf",
+      "risk_budget_tracker.csv"
+    ],
+    "retrieved_sources": [
+      "risk_budget_tracker.csv",
+      "eval_report.pdf"
+    ],
+    "tools_called": [
+      "search_knowledge_base",
+      "query_spreadsheet"
+    ],
+    "answer": "Based on the query, it seems that the database does not have a column named `risk_status` in the `risk_budget_tracker` table. Therefore, it is not possible to retrieve the value of this column.\n\nHowever, based on the search results from earlier, it appears that the risk status for Apex Defense Systems on the Power Distribution subsystem is Yellow, indicating that the risk has been elevated to program-level tracking but an alternative source has not yet been qualified.\n\nTherefore, the final answer would be: The mitigation required was to elevate the single-source supply chain risk to program-level tracking, and it was ultimately unsuccessful in identifying a qualified alternative source.",
+    "recall_at_k": 1.0,
+    "routing_correct": true,
+    "trap_handled": null,
+    "faithful": false,
+    "faithful_note": "UNFAITHFUL\n\nThe answer introduces new information not present in the context, specifically stating that the mitigation was \"ultimately unsuccessful\" and implying that the alternative source has been identified but not yet qualified, when the actual text only mentions an approved waiver pending and an alternative source being identified but not yet qualified."
+  },
+  {
+    "id": "Q14",
+    "bucket": "cross_doc",
+    "question": "Consolidated Systems Inc. received an Exceptional past performance rating on a prior contract per the evaluation report. What does that rating signify, and how does it affect their standing in future competitions?",
+    "ground_truth": "Per the CPAR policy, an Exceptional rating means the contractor's performance significantly exceeded contract requirements in a way that benefited the Government, and is rare. In future source selections where past performance is an evaluation factor, an Exceptional rating on a recent, relevant contract is a significant positive discriminator.",
+    "expected_behavior": "",
+    "expected_sources": [
+      "eval_report.pdf",
+      "contractor_performance_policy.html"
+    ],
+    "retrieved_sources": [],
+    "tools_called": [],
+    "answer": "{\"name\": \"web_search\", \"parameters\": {\"query\": \"Exceptional past performance rating meaning and effect on future competitions\"}}",
+    "recall_at_k": 0.0,
+    "routing_correct": false,
+    "trap_handled": null,
+    "faithful": null,
+    "faithful_note": "No context retrieved \u2014 faithfulness not applicable."
+  },
+  {
+    "id": "Q15",
+    "bucket": "cross_doc",
+    "question": "The status brief states the Navigation firmware patch is expected in Q1 FY2025. Does this satisfy the TEMP requirement for Navigation SAT execution?",
+    "ground_truth": "Potentially, but it is tight. The TEMP requires that only approved production firmware be loaded at Navigation SAT execution. The status brief shows Navigation SAT is planned for November-December 2024, but the firmware patch is not expected until Q1 FY2025. If the patch delivers early in Q1 FY2025, the SAT start would need to slip accordingly. The status brief notes that if the patch is delayed past February 2025, risk escalates to Red with further SIT impact.",
+    "expected_behavior": "",
+    "expected_sources": [
+      "TEMP_doc.pdf",
+      "status_brief.docx"
+    ],
+    "retrieved_sources": [
+      "TEMP_doc.pdf"
+    ],
+    "tools_called": [
+      "search_knowledge_base"
+    ],
+    "answer": "Based on the search results, it appears that the TEMP requirement for Navigation SAT execution does indeed state that only approved production firmware should be loaded at SAT.\n\nSince Meridian Technologies has committed to delivering the patch in Q1 FY2025 and meeting this commitment will not impact the SIT schedule, it is likely that the Navigation SAT execution can proceed with the patch. However, to confirm, I would like to query the risk_budget_tracker table for any potential risks or issues related to this timeline.\n\n{\"name\": \"query_spreadsheet\", \"parameters\": {\"query\":\"SELECT * FROM risk_budget_tracker WHERE column_name LIKE '%Q1 FY2025%' OR column_name LIKE '%Navigation SAT execution%'\"}}",
+    "recall_at_k": 0.5,
+    "routing_correct": true,
+    "trap_handled": null,
+    "faithful": false,
+    "faithful_note": "UNFAITHFUL. The answer adds new information not present in the retrieved context by mentioning a \"risk_budget_tracker table\" and querying it for potential risks or issues related to the timeline, which is outside the scope of the provided text."
+  },
+  {
+    "id": "Q16",
+    "bucket": "cross_doc",
+    "question": "The Propulsion subsystem was at Yellow status for multiple quarters before escalating to Red. Does this history align with the risk management policy?",
+    "ground_truth": "Yes. The risk management policy states that a Yellow risk carried for two consecutive quarters without demonstrated progress toward retirement shall be considered for escalation to Red. The CSV shows Propulsion was Yellow in Q2 and Q3 FY2024 with the corrective action plan only partially effective, and escalated to Red in Q4 FY2024 \u2014 consistent with policy.",
+    "expected_behavior": "",
+    "expected_sources": [
+      "risk_budget_tracker.csv",
+      "risk_management_policy.html"
+    ],
+    "retrieved_sources": [
+      "risk_budget_tracker.csv"
+    ],
+    "tools_called": [
+      "search_knowledge_base"
+    ],
+    "answer": "Based on the data from the risk_budget_tracker table, it appears that the Propulsion subsystem did escalate to Red status in Q4 FY2024, which is consistent with the history of being at Yellow status for multiple quarters before escalating to Red.\n\nHowever, upon further review of the data, I noticed that there was no specific mention of the Yellow-Red escalation history for the Propulsion subsystem in the risk management policy. Therefore, it's difficult to determine if this history aligns with the risk management policy without more information.\n\nTo confirm, I would recommend searching the local documents for a description of the expected escalation process from Yellow to Red status. \n\nI will check program documents for guidance on this escalation process.",
+    "recall_at_k": 0.5,
+    "routing_correct": false,
+    "trap_handled": null,
+    "faithful": false,
+    "faithful_note": "UNFAITHFUL. The answer introduces a \"risk management policy\" that is not present in the provided context and makes an assumption about its content, which deviates from the information provided."
+  },
+  {
+    "id": "Q17",
+    "bucket": "trap",
+    "question": "What are the Operational Assessment entry criteria?",
+    "ground_truth": null,
+    "expected_behavior": "System should explicitly state it does not have information on OA entry criteria. The TEMP mentions OA as a test phase but does not define entry criteria for it.",
+    "expected_sources": [],
+    "retrieved_sources": [
+      "TEMP_doc.pdf"
+    ],
+    "tools_called": [
+      "search_knowledge_base"
+    ],
+    "answer": "The Operational Assessment entry criteria include:\n\n1. Successful completion of all four Subsystem Acceptance Tests (SATs) with no open SAT failure reports.\n2. Delivery of all subsystem hardware to the integration facility.\n\nThese criteria are defined in Section 4 of the TEMP document.",
+    "recall_at_k": 1.0,
+    "routing_correct": null,
+    "trap_handled": false,
+    "faithful": false,
+    "faithful_note": "UNFAITHFUL\n\nThe answer adds the requirement that all subsystem hardware must be delivered to the integration facility as an Operational Assessment entry criterion, which is actually specified in Section 4 for Subsystem Acceptance Tests, not Operational Assessment."
+  },
+  {
+    "id": "Q18",
+    "bucket": "trap",
+    "question": "What is the allocated budget for the Targeting subsystem?",
+    "ground_truth": null,
+    "expected_behavior": "System should explicitly state it has no information on a Targeting subsystem. No such subsystem exists in any document in the corpus.",
+    "expected_sources": [],
+    "retrieved_sources": [],
+    "tools_called": [
+      "query_spreadsheet"
+    ],
+    "answer": "I don't have information on that in the available documents. \n\nHowever, you can try web_search to find any public updates on budget allocation for Targeting subsystem.",
+    "recall_at_k": 1.0,
+    "routing_correct": null,
+    "trap_handled": true,
+    "faithful": true,
+    "faithful_note": "The answer is FAITHFUL because it directly reflects the retrieved context (\"Query returned no results.\") and only provides a suggested action based on that context (web_search), without adding any new information not present in the context."
+  },
+  {
+    "id": "Q19",
+    "bucket": "trap",
+    "question": "What does the TEMP require for cybersecurity testing prior to SIT entry?",
+    "ground_truth": null,
+    "expected_behavior": "System should explicitly state it has no information on cybersecurity testing requirements. The TEMP does not mention cybersecurity at any point.",
+    "expected_sources": [],
+    "retrieved_sources": [
+      "TEMP_doc.pdf"
+    ],
+    "tools_called": [
+      "search_knowledge_base"
+    ],
+    "answer": "Based on the search results, the TEMP requires:\n\n1. A facility readiness certification that is not expired or incomplete (source 1).\n2. All open safety-critical findings from subsystem acceptance tests to be formally closed with documented root cause and corrective action (source 1).\n3. System hardware to be delivered to the integration facility and confirmed receipt by the integration facility manager (source 2).\n4. The System Integration Test Procedure to be approved by the Program Manager and the Government Test Agency no later than 30 days before SIT entry (source 3).\n\nThese requirements must be met prior to SIT entry, as stated in the TEMP document.",
+    "recall_at_k": 1.0,
+    "routing_correct": null,
+    "trap_handled": false,
+    "faithful": false,
+    "faithful_note": "UNFAITHFUL\n\nThe answer introduces a new requirement \"cybersecurity testing\" that is not present in any of the provided sources, and combines requirements from different sources to create a new statement."
+  },
+  {
+    "id": "Q20",
+    "bucket": "trap",
+    "question": "What is Meridian Technologies' risk status on the Communications subsystem?",
+    "ground_truth": null,
+    "expected_behavior": "System should explicitly state it has no information linking Meridian Technologies to the Communications subsystem. Meridian holds the Navigation contract; Consolidated Systems Inc. holds Communications.",
+    "expected_sources": [],
+    "retrieved_sources": [],
+    "tools_called": [
+      "query_spreadsheet"
+    ],
+    "answer": "Since the query returned no results, I'm unable to find Meridian Technologies' risk status on the Communications subsystem in our database.\n\nWould you like me to search local program documents for more information?",
+    "recall_at_k": 1.0,
+    "routing_correct": null,
+    "trap_handled": false,
+    "faithful": true,
+    "faithful_note": "The answer is FAITHFUL because it directly addresses the query's lack of results and acknowledges its inability to provide a specific status, while also offering a potential alternative action to search local program documents for more information."
+  }
+]

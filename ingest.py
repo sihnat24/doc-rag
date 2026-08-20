@@ -15,12 +15,17 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+import re
+
 import chromadb
 import pandas as pd
 import pdfplumber
 from bs4 import BeautifulSoup
 from docx import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from marker.converters.pdf import PdfConverter
+from marker.models import create_model_dict
+from marker.output import text_from_rendered
 from sentence_transformers import SentenceTransformer
 
 import config
@@ -87,18 +92,11 @@ def parse_pdf(path: str) -> str:
     full_text = []
     with pdfplumber.open(path) as pdf:
             for page in pdf.pages:
-
-                #first, extract any tables in the page
-                tables = page.extract_tables()
-                for table in tables:
-                    for row in table:
-                        row_text = " | ".join(cell or "" for cell in row)
-                        full_text.append(row_text)
-
-                #for text, first determine column format (not all papers are one nice block of text that can be read left to right row by row)
+                # Tables are NOT extracted separately — extract_text() picks them up
+                # in natural reading order so captions stay with their table content.
                 cols = detect_columns(page, config.PIXEL_THRESH)
                 if cols == 1:
-                    text= page.extract_text()
+                    text = page.extract_text()
                     if text:
                         full_text.append(text)
                 else: #2 col academic paper
@@ -111,6 +109,67 @@ def parse_pdf(path: str) -> str:
 
     return "\n\n".join(full_text) #very clear a new page starts
  
+def parse_pdf_marker(path: Path, converter: PdfConverter) -> tuple[str, list[str], list[str]]:
+    """
+    Layout-aware PDF parsing using Marker (trained on scientific papers).
+    Returns (prose_text, table_chunks, figure_chunks).
+
+    Tables and figures are returned as pre-formed chunks (bypass splitter).
+    Prose is returned as a single string to be chunked normally.
+    """
+    rendered = converter(str(path))
+    text, _, _ = text_from_rendered(rendered)
+
+    table_chunks = []
+    figure_chunks = []
+    prose_lines = []
+
+    lines = text.split("\n")
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+
+        # TABLE: caption line followed by markdown table rows
+        # Strip inline HTML spans that Marker sometimes prepends (e.g. <span id="page-X-0"></span>)
+        clean_line = re.sub(r"<[^>]+>", "", line).strip()
+        if re.match(r"^TABLE\s+\d+", clean_line):
+            chunk_lines = [clean_line]
+            i += 1
+            while i < len(lines):
+                l = lines[i]
+                if l.startswith("|") or l.strip().startswith("Note:") or l.strip() == "":
+                    chunk_lines.append(l)
+                    i += 1
+                    # stop after a blank line following table rows
+                    if l.strip() == "" and chunk_lines[-2].strip() == "":
+                        break
+                else:
+                    break
+            chunk = "\n".join(chunk_lines).strip()
+            if len(chunk) >= 100:
+                table_chunks.append(chunk)
+            continue
+
+        # FIGURE: caption line (the actual image refs ![](...) are discarded)
+        if re.match(r"^FIGURE\s+\d+", clean_line):
+            chunk = clean_line
+            if len(chunk) >= 50:
+                figure_chunks.append(chunk)
+            i += 1
+            continue
+
+        # Image refs — discard, no useful text content
+        if re.match(r"^!\[", line.strip()):
+            i += 1
+            continue
+
+        prose_lines.append(line)
+        i += 1
+
+    prose_text = "\n".join(prose_lines)
+    return prose_text, table_chunks, figure_chunks
+
+
 def parse_docx(path: str) -> str:
     full_text = []
     doc = Document(path)
@@ -185,8 +244,7 @@ def extract_chunks(text: str) -> list[str]:
       chunk_overlap=config.CHUNK_OVERLAP
     )
     chunks = splitter.split_text(text)
-    
-    return chunks
+    return [c for c in chunks if len(c.strip()) >= 100]
 
 
 def ingest_tables(paths: list[Path], log: dict, force: bool):
@@ -195,22 +253,38 @@ def ingest_tables(paths: list[Path], log: dict, force: bool):
 
     for p in paths:
         if not force and already_ingested(p, log):
-            print(f"  [skip] {p.name} (unchanged)")
+            base_name = p.stem.lower().replace(" ", "_").replace("-", "_")
+            cur = con.cursor()
+            cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE ?", (f"{base_name}%",))
+            existing = [r[0] for r in cur.fetchall()]
+            tables_str = ", ".join(existing) if existing else "unknown"
+            print(f"  [skip] {p.name} (unchanged) → tables: {tables_str}")
             continue
 
         if p.suffix == ".csv":
-            df = pd.read_csv(p)
+            sheets = {"": pd.read_csv(p)}
         else:
-            df = parse_xlsx(p)
+            sheets = pd.read_excel(p, sheet_name=None)  # dict of {sheet_name: df}
 
-        df.columns = [c.strip().lower().replace(" ", "_") for c in df.columns]
-        df = df.map(lambda x: x.strip() if isinstance(x, str) else x)
+        base_name = p.stem.lower().replace(" ", "_").replace("-", "_")
 
-        table_name = p.stem.lower().replace(" ", "_").replace("-", "_")
-        df.to_sql(table_name, con, if_exists="replace", index=False)
+        for sheet_name, df in sheets.items():
+            df.columns = [c.strip().lower().replace(" ", "_") for c in df.columns]
+            df = df.map(lambda x: x.strip() if isinstance(x, str) else x)
+            if "domains" in df.columns:
+                df["domains"] = df["domains"].str.strip(",").str.strip().str.upper()
+
+            # single-sheet files (CSV or single-tab xlsx): use base name
+            # multi-sheet xlsx: append sheet name
+            if sheet_name and len(sheets) > 1:
+                table_name = f"{base_name}_{sheet_name.lower().replace(' ', '_')}"
+            else:
+                table_name = base_name
+
+            df.to_sql(table_name, con, if_exists="replace", index=False)
+            print(f"  [table] {p.name} → SQLite table '{table_name}' ({len(df)} rows)")
 
         log_file(p, log, "table")
-        print(f"  [table] {p.name} → SQLite table '{table_name}' ({len(df)} rows)")
 
     con.close()
 
@@ -219,20 +293,33 @@ def ingest_prose(paths: list[Path], collection, encoder, log: dict, force: bool)
     """Chunk and embed prose files into Chroma."""
     chunks, sources, source_ids = [], [], []
 
+    # Load Marker once — model is expensive to initialise
+    pdf_paths = [p for p in paths if p.suffix == ".pdf"]
+    converter = PdfConverter(artifact_dict=create_model_dict()) if pdf_paths else None
+
     for p in paths:
         if not force and already_ingested(p, log):
             print(f"  [skip] {p.name} (unchanged)")
             continue
 
-        text = extract_text(p)
-        file_chunks = extract_chunks(text)
+        if p.suffix == ".pdf":
+            print(f"  [parsing] {p.name}...", flush=True)
+            prose_text, table_chunks, figure_chunks = parse_pdf_marker(p, converter)
+            file_chunks = extract_chunks(prose_text) + table_chunks + figure_chunks
+            suffix = f" ({len(table_chunks)} tables, {len(figure_chunks)} figures)"
+        else:
+            table_chunks, figure_chunks = [], []
+            text = extract_text(p)
+            file_chunks = extract_chunks(text)
+            suffix = ""
+
         for idx, chunk in enumerate(file_chunks):
             source_ids.append(f"{p.name}_{idx}")
             chunks.append(chunk)
             sources.append(p.name)
 
         log_file(p, log, "prose")
-        print(f"  [prose] {p.name} → {len(file_chunks)} chunks")
+        print(f"  [prose] {p.name} → {len(file_chunks)} chunks{suffix}", flush=True)
 
     if chunks:
         embeddings = encoder.encode(chunks).tolist()
